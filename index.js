@@ -1,34 +1,92 @@
-function createGoban(){
-  let goban = "";
-  goban += createRow("top");
-  for(i = 0; i < 7; i++){
-    if(i == 1 || i == 5){
-      goban += createRow("two-hoshi")
-    }else if( i == 3){
-      goban += createRow("middle")
-    }else{
-      goban += createRow();
+//Global Variables
+let turn = 0;
+let pass = 0;
+let game = "gomoku";
+let size = 9;
+let gobanState = [];
+
+function createGoban(size = 9) {
+
+  let gobanText = "";
+  let goban = document.querySelector("#goban");
+
+  emptyGoban();
+
+  switch (size) {
+    case 8: {
+      gobanText += createRow("othello-top");
+      for (i = 0; i < 6; i++) {
+        gobanText += createRow("othello");
+      }
+      gobanText += createRow("othello-bottom");
+
+      gobanState = [
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0]
+      ];
+      break;
+    }
+    case 9: {
+      gobanText += createRow("top");
+      for (i = 0; i < 7; i++) {
+        if (i == 1 || i == 5) {
+          gobanText += createRow("two-hoshi")
+        } else if (i == 3) {
+          gobanText += createRow("middle")
+        } else {
+          gobanText += createRow();
+        }
+      }
+      gobanText += createRow("bottom");
+
+      gobanState = [
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      ];
+
+      break;
     }
   }
-  goban += createRow("bottom");
 
-  document.querySelector("#goban").innerHTML += goban;
 
+  goban.innerHTML += gobanText;
+
+  // console.log(gobanText);
   let intersections = document.querySelectorAll("#goban > img");
   for (let i = 0; i < intersections.length; i++) {
     intersections[i].onclick = placePiece;
+    intersections[i].setAttribute("alt", `${i}`);
+    intersections[i].setAttribute("alt", `${i}`);
+
+    if(size == 8){
+      intersections[i].style.width = "12.5%"
+    }
   }
+
+
 }
 
-function emptyGoban(){
+function emptyGoban() {
   document.querySelector("#goban").innerHTML = "";
-  createGoban();
 
   turn = 0;
   pass = 0;
 }
 
-function createRow(rowType){
+function createRow(rowType) {
   let row = "";
   const cornerUl = `<img src="./css/corner-ul.png"></img>`
   const cornerUr = `<img src="./css/corner-ur.png"></img>`
@@ -41,25 +99,163 @@ function createRow(rowType){
   const middle = `<img src="./css/middle.png"></img>`
   const hoshi = `<img src="./css/hoshi.png"></img>`
 
-  if(rowType == "top"){
+  if (rowType == "top") {
     row += cornerUl + borderTop.repeat(7) + cornerUr;
-  }else if(rowType == "bottom"){
+  } else if (rowType == "bottom") {
     row += cornerBl + borderBottom.repeat(7) + cornerBr;
-  }else if(rowType == "two-hoshi"){
+  } else if (rowType == "two-hoshi") {
     row += borderLeft + middle.repeat(1) + hoshi + middle.repeat(3) + hoshi + middle + borderRight;
-  }else if(rowType == "middle"){
+  } else if (rowType == "middle") {
     row += borderLeft + middle.repeat(3) + hoshi + middle.repeat(3) + borderRight;
-  }else{
+  } else if (rowType == "othello-top") {
+    row += cornerUl + borderTop.repeat(6) + cornerUr;
+  } else if (rowType == "othello") {
+    row += borderLeft + middle.repeat(6) + borderRight;
+  } else if (rowType == "othello-bottom") {
+    row += cornerBl + borderBottom.repeat(6) + cornerBr;
+  } else {
     row += borderLeft + middle.repeat(7) + borderRight;
   }
 
   return row;
 }
 
-function placePiece(e){
-  const intersection = e.target;
+function changeGame() {
+  if (document.querySelector("select[name=games]").value == "othello") {
+    document.querySelector("select[name=board-size]").innerHTML = '<option value="8">8 x 8</option>';
 
-  const filepath = "file:///C:/Users/qiwei/Desktop/Code/IronHack/module-1/self-directed-project/Board-Games/"
+    createGoban(8);
+  }
+  else {
+    document.querySelector("select[name=board-size]").innerHTML =
+      `<option value="9">9 x 9</option>
+      <option value="13">13 x 13</option>
+      <option value="19">19 x 19</option>`;
+
+    createGoban(9);
+  }
+}
+
+function checkHorizontal(row, col) {
+  let checkValue = gobanState[row][col];
+  let streak = -1;
+  const leftBound = col - 4 >= 0 ? col - 4 : 0;
+  const rightBound = col + 4 <= 8 ? col + 4 : 8;
+
+
+  for (let i = col; i >= leftBound; i--) {
+    if (gobanState[row][i] == checkValue) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+  for (let i = col; i <= rightBound; i++) {
+    if (gobanState[row][i] == checkValue) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+
+  return streak > 4;
+}
+
+function checkVertical(row, col) {
+  let checkValue = gobanState[row][col];
+  let streak = -1;
+  const topBound = row - 4 >= 0 ? row - 4 : 0;
+  const bottomBound = row + 4 <= 8 ? row + 4 : 8;
+
+
+  for (let i = row; i >= topBound; i--) {
+    if (gobanState[i][col] == checkValue) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+  for (let i = row; i <= bottomBound; i++) {
+    if (gobanState[i][col] == checkValue) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+
+  return streak > 4;
+}
+
+function checkDiagonal(row, col) {
+  let checkValue = gobanState[row][col];
+  let streak = -1;
+
+  for (let i = 0; i < 5; i++) {
+    if (row - i < 0 || col - i < 0) {
+      break;
+    } else if (gobanState[row - i][col - i] !== checkValue) {
+      break;
+    }
+    streak++;
+  }
+
+  for (let i = 0; i < 5; i++) {
+    if (row + i > 8 || col + i > 8) {
+      break;
+    } else if (gobanState[row + i][col + i] !== checkValue) {
+      break;
+    }
+    streak++;
+  }
+
+  if (streak > 4) {
+    return true;
+  }
+
+  streak = -1;
+
+  for (let i = 0; i < 5; i++) {
+    if (row + i > 8 || col - i < 0) {
+      break;
+    } else if (gobanState[row + i][col - i] !== checkValue) {
+      break;
+    }
+    streak++;
+  }
+
+  for (let i = 0; i < 5; i++) {
+    if (row - i < 0 || col + i > 8) {
+      break;
+    } else if (gobanState[row - i][col + i] !== checkValue) {
+      break;
+    }
+    streak++;
+  }
+
+  return streak > 4;
+}
+
+function checkBoard(row, col) {
+  let message = "";
+
+  if (gobanState[row][col] == 1) {
+    message += "Black has won the game!"
+  } else {
+    message += "White has won the game!"
+  }
+
+  if (checkHorizontal(row, col) || checkVertical(row, col) || checkDiagonal(row, col)) {
+    window.confirm(message);
+  }
+}
+
+function placePiece(e) {
+  const intersection = e.target;
+  const filepath = "file:///C:/Users/qiwei/Desktop/Code/IronHack/module-1/self-directed-project/Board-Games/";
+  const isBlack = (turn % 2 == 0);
+  const position = Number(intersection.alt);
+  const row = Math.floor(position / 9);
+  const col = position % 9;
 
   const cornerUl = `${filepath}css/corner-ul.png`
   const cornerUr = `${filepath}css/corner-ur.png`
@@ -72,7 +268,7 @@ function placePiece(e){
   const middle = `${filepath}css/middle.png`
   const hoshi = `${filepath}css/hoshi.png`
 
-  if(turn % 2 == 0){
+  if (isBlack) {
     switch (intersection.src) {
       case cornerUl:
         intersection.setAttribute("src", "./css/corner-ul-b.png");
@@ -106,9 +302,8 @@ function placePiece(e){
         break;
       default:
         return;
-
     }
-  }else{
+  } else {
     switch (intersection.src) {
       case cornerUl:
         intersection.setAttribute("src", "./css/corner-ul-w.png");
@@ -145,22 +340,24 @@ function placePiece(e){
     }
   }
 
+  gobanState[row][col] = isBlack ? 1 : -1;
   turn++;
   pass = 0;
+
+  checkBoard(row, col);
 }
 
-function passTurn(){
+function passTurn() {
   turn++;
   pass++;
 }
-
-let turn = 0;
-let pass = 0;
 
 window.onload = function () {
   createGoban();
 
   document.querySelector("#pass").onclick = passTurn;
-  document.querySelector("#restart").onclick = emptyGoban;
+  document.querySelector("#restart").onclick = changeGame;
+
+  document.querySelector("select[name=games]").onchange = changeGame;
 }
 
