@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Personal Project -Go Board-</title>
+  <link rel="stylesheet" href="./css/index.css">
+  <link rel="shortcut icon" href="http://www.gameppoint.com/gomoku/img/icon256.png" />
+</head>
+
+<body>
+  <div class="wrapper">
+    <div id="selector">
+      <label>Game: </label>
+      <select name="Games">
+        <option value="Go">Go</option>
+        <option value="Gomoku">Gomoku</option>
+        <option value="Othello">Othello</option>
+      </select>
+      <label>Board Size: </label>
+      <select name="board-size">
+        <option value="9x9">9 x 9</option>
+        <option value="13x13">13 x 13</option>
+        <option value="19x19">19 x 19</option>
+      </select>
+    </div>
+    <div id="game-container">
+      <div class="guides">
+        <ul>
+          <li></li>
+          <li>A</li>
+          <li>B</li>
+          <li>C</li>
+          <li>D</li>
+          <li>E</li>
+          <li>F</li>
+          <li>G</li>
+          <li>H</li>
+          <li>I</li>
+          <li></li>
+        </ul>
+      </div>
+      <div id="goban-container">
+        <div class="guides">
+          <ul>
+            <li>1</li>
+            <li>2</li>
+            <li>3</li>
+            <li>4</li>
+            <li>5</li>
+            <li>6</li>
+            <li>7</li>
+            <li>8</li>
+            <li>9</li>
+          </ul>
+        </div>
+        <div id="goban">
+        </div>
+        <div class="guides">
+          <ul>
+            <li>1</li>
+            <li>2</li>
+            <li>3</li>
+            <li>4</li>
+            <li>5</li>
+            <li>6</li>
+            <li>7</li>
+            <li>8</li>
+            <li>9</li>
+          </ul>
+        </div>
+      </div>
+      <div class="guides">
+        <ul>
+          <li></li>
+          <li>A</li>
+          <li>B</li>
+          <li>C</li>
+          <li>D</li>
+          <li>E</li>
+          <li>F</li>
+          <li>G</li>
+          <li>H</li>
+          <li>I</li>
+          <li></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="wrapper">
+    <div id="game-menu">
+      <div class="player-box">
+        Black<br>
+        Score:<span> </span>
+      </div>
+      <div class="player-box">
+        White<br>
+        Score:<span> </span>
+      </div>
+      <div id="general">
+        <button id ="pass" type="button">Pass</button>
+        <button id ="restart" type="button">Restart</button>
+      </div>
+    </div>
+  </div>
+  <script src="./index.js"></script>
+</body>
+
+</html>
