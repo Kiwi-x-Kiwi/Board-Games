@@ -59,7 +59,7 @@ function createRow(rowType){
 function placePiece(e){
   const intersection = e.target;
 
-  const filepath = "file:///C:/Users/qiwei/Desktop/Code/IronHack/module-1/self-directed-project/"
+  const filepath = "file:///C:/Users/qiwei/Desktop/Code/IronHack/module-1/self-directed-project/Board-Games/"
 
   const cornerUl = `${filepath}css/corner-ul.png`
   const cornerUr = `${filepath}css/corner-ur.png`
