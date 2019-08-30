@@ -1,363 +1,174 @@
-//Global Variables
-let turn = 0;
-let pass = 0;
-let game = "gomoku";
-let size = 9;
+// Global Variables
+let turn, pass, game, size; // game and size initializes to default index.html value;
+turn = pass = 0;
 let gobanState = [];
 
-function createGoban(size = 9) {
+// Initializes a (size x size) 2D array with 0s.
+function init2DArray(arrSize = size) {
+  return Array(arrSize).fill().map(() => Array(arrSize).fill(0));
+}
 
-  let gobanText = "";
-  let goban = document.querySelector("#goban");
+// Create all the rows
+function createRows() {
+  let rows = "";
+  const imgPath = `<img src="./css/`
 
-  emptyGoban();
+  rows += (imgPath + `corner-ul.png"></img>` + (imgPath + `border-top.png"></img>`).repeat(size - 2) + imgPath + `corner-ur.png"></img>`); // Top Row
 
-  switch (size) {
-    case 8: {
-      gobanText += createRow("othello-top");
-      for (i = 0; i < 6; i++) {
-        gobanText += createRow("othello");
-      }
-      gobanText += createRow("othello-bottom");
-
-      gobanState = [
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0]
-      ];
-      break;
-    }
-    case 9: {
-      gobanText += createRow("top");
-      for (i = 0; i < 7; i++) {
-        if (i == 1 || i == 5) {
-          gobanText += createRow("two-hoshi")
-        } else if (i == 3) {
-          gobanText += createRow("middle")
-        } else {
-          gobanText += createRow();
+  // All rows in the middle
+  for (let i = 1; i < size - 1; i++) {
+    let middleRow = ""
+    if (game !== "othello") {
+      if (size == 19) {
+        if (i == 3 || i == 9 || i == 15) {
+          middleRow = imgPath + `border-left.png"></img>` + (imgPath + `middle.png"></img>`).repeat(2) + (imgPath + `hoshi.png"></img>`) + (imgPath + `middle.png"></img>`).repeat(5) + (imgPath + `hoshi.png"></img>`) + (imgPath + `middle.png"></img>`).repeat(5) + (imgPath + `hoshi.png"></img>`) + (imgPath + `middle.png"></img>`).repeat(2) + imgPath + `border-right.png"></img>`;
+        }
+      }else if (size == 13){
+        if(i == 3 || i  == 9){
+          middleRow = imgPath + `border-left.png"></img>` + (imgPath + `middle.png"></img>`).repeat(2) + (imgPath + `hoshi.png"></img>`) + (imgPath + `middle.png"></img>`).repeat(5) + (imgPath + `hoshi.png"></img>`) + (imgPath + `middle.png"></img>`).repeat(2) + imgPath + `border-right.png"></img>`;
+        }else if(i == 6){
+          middleRow = imgPath + `border-left.png"></img>` + (imgPath + `middle.png"></img>`).repeat(5) + (imgPath + `hoshi.png"></img>`) + (imgPath + `middle.png"></img>`).repeat(5) + imgPath + `border-right.png"></img>`;
+        }
+      }else if(size == 9){
+        if (i == 2 || i == 6) {
+          middleRow = imgPath + `border-left.png"></img>` + (imgPath + `middle.png"></img>`) + (imgPath + `hoshi.png"></img>`) + (imgPath + `middle.png"></img>`).repeat(3) + (imgPath + `hoshi.png"></img>`) + (imgPath + `middle.png"></img>`) + imgPath + `border-right.png"></img>`;
+        } else if (i == 4) {
+          middleRow = imgPath + `border-left.png"></img>` + (imgPath + `middle.png"></img>`).repeat(3) + (imgPath + `hoshi.png"></img>`) + (imgPath + `middle.png"></img>`).repeat(3) + imgPath + `border-right.png"></img>`;
         }
       }
-      gobanText += createRow("bottom");
+    }
+    
+    rows += middleRow == "" ? imgPath + `border-left.png"></img>` + (imgPath + `middle.png"></img>`).repeat(size - 2) + imgPath + `border-right.png"></img>`: middleRow;
+  }
 
-      gobanState = [
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0]
-      ];
+  rows += (imgPath + `corner-bl.png"></img>` + (imgPath + `border-bottom.png"></img>`).repeat(size - 2) + imgPath + `corner-br.png"></img>`); // Bottom Row
+  return rows;
+}
 
+function setPiece(bool, intersection, row, col){
+  if(bool){
+    const imageEnding = (turn % 2 == 0) ? "-b.png" : "-w.png";
+    intersection.src = intersection.src.replace(".png", imageEnding);
+    gobanState[row][col] = (turn % 2 == 0) ? 1 : -1;
+    nextTurn();
+  }
+}
+
+// Check to see if a piece can be played on the goban
+function play(e){
+  const intersection = e.target;
+  const index = Number(intersection.alt);
+  const row = Math.floor(index / size);
+  const col = index % size;
+  
+  switch(game){
+    case "gomoku":
+      setPiece(playGomoku(row, col), intersection, row, col);
       break;
-    }
+    case "othello":
+      setPiece(playOthello(row, col), intersection, row, col);
+      break;
+    case "go":
+      setPiece(playGo(row, col), intersection, row, col);
+      break;
   }
+}
+
+// Create a new goban
+function createGoban() {
+  // Create/reset board
+  document.querySelector("#goban").innerHTML = createRows();
+  turn = pass = 0;
+  let width = "11%";
+  gobanState = init2DArray();
 
 
-  goban.innerHTML += gobanText;
-
-  // console.log(gobanText);
   let intersections = document.querySelectorAll("#goban > img");
-  for (let i = 0; i < intersections.length; i++) {
-    intersections[i].onclick = placePiece;
-    intersections[i].setAttribute("alt", `${i}`);
-    intersections[i].setAttribute("alt", `${i}`);
-
-    if(size == 8){
-      intersections[i].style.width = "12.5%"
-    }
-  }
 
 
-}
-
-function emptyGoban() {
-  document.querySelector("#goban").innerHTML = "";
-
-  turn = 0;
-  pass = 0;
-}
-
-function createRow(rowType) {
-  let row = "";
-  const cornerUl = `<img src="./css/corner-ul.png"></img>`
-  const cornerUr = `<img src="./css/corner-ur.png"></img>`
-  const cornerBl = `<img src="./css/corner-bl.png"></img>`
-  const cornerBr = `<img src="./css/corner-br.png"></img>`
-  const borderTop = `<img src="./css/border-top.png"></img>`
-  const borderRight = `<img src="./css/border-right.png"></img>`
-  const borderBottom = `<img src="./css/border-bottom.png"></img>`
-  const borderLeft = `<img src="./css/border-left.png"></img>`
-  const middle = `<img src="./css/middle.png"></img>`
-  const hoshi = `<img src="./css/hoshi.png"></img>`
-
-  if (rowType == "top") {
-    row += cornerUl + borderTop.repeat(7) + cornerUr;
-  } else if (rowType == "bottom") {
-    row += cornerBl + borderBottom.repeat(7) + cornerBr;
-  } else if (rowType == "two-hoshi") {
-    row += borderLeft + middle.repeat(1) + hoshi + middle.repeat(3) + hoshi + middle + borderRight;
-  } else if (rowType == "middle") {
-    row += borderLeft + middle.repeat(3) + hoshi + middle.repeat(3) + borderRight;
-  } else if (rowType == "othello-top") {
-    row += cornerUl + borderTop.repeat(6) + cornerUr;
-  } else if (rowType == "othello") {
-    row += borderLeft + middle.repeat(6) + borderRight;
-  } else if (rowType == "othello-bottom") {
-    row += cornerBl + borderBottom.repeat(6) + cornerBr;
+  // Size imgs according to size of game
+  if (game == "othello") {
+    width = "12.5%";
+  } else if (size == 19) {
+    width = "5.25%";
+  } else if (size == 13) {
+    width = "7.65%";
   } else {
-    row += borderLeft + middle.repeat(7) + borderRight;
+    width = "11%";
   }
 
-  return row;
+  // Enable onclick function for all img
+  for (let i = 0; i < intersections.length; i++) {
+    intersections[i].onclick = play;
+    intersections[i].setAttribute("alt", `${i}`);
+    intersections[i].style.width = width;
+  }
+
+  if (game == "othello") {
+    document.querySelector("#goban > img:nth-child(28)").click();
+    document.querySelector("#goban > img:nth-child(29)").click();
+    document.querySelector("#goban > img:nth-child(37)").click();
+    document.querySelector("#goban > img:nth-child(36)").click();
+  }
 }
 
-function changeGame() {
-  if (document.querySelector("select[name=games]").value == "othello") {
-    document.querySelector("select[name=board-size]").innerHTML = '<option value="8">8 x 8</option>';
+//Increments turn and reset pass, change box emphasis
+function nextTurn(){
+  pass = 0;
+  turn++;
 
-    createGoban(8);
+  if(turn % 2 == 0){
+    document.querySelector("#game-menu > div:nth-child(1)").style.borderColor = "#1477FF"
+    document.querySelector("#game-menu > div:nth-child(2)").style.borderColor = "#383838"
+  }else{
+    document.querySelector("#game-menu > div:nth-child(2)").style.borderColor = "#1477FF"
+    document.querySelector("#game-menu > div:nth-child(1)").style.borderColor = "#383838"
   }
-  else {
+}
+
+// Increments turn and pass global variables
+function passTurn() {
+  pass++;
+  nextTurn();
+}
+
+// Updates game variable and size dropdown menu and re-initalize game
+function changeGame() {
+  game = document.querySelector("select[name=games]").value;
+
+  // Only one size available for othello game
+  if (game == "othello") {
+    document.querySelector("select[name=board-size]").innerHTML = '<option value="8">8 x 8</option>';
+    size = 8;
+  } else {
     document.querySelector("select[name=board-size]").innerHTML =
       `<option value="9">9 x 9</option>
       <option value="13">13 x 13</option>
       <option value="19">19 x 19</option>`;
-
-    createGoban(9);
+    size = 9;
   }
+
+  createGoban();
 }
 
-function checkHorizontal(row, col) {
-  let checkValue = gobanState[row][col];
-  let streak = -1;
-  const leftBound = col - 4 >= 0 ? col - 4 : 0;
-  const rightBound = col + 4 <= 8 ? col + 4 : 8;
-
-
-  for (let i = col; i >= leftBound; i--) {
-    if (gobanState[row][i] == checkValue) {
-      streak++;
-    } else {
-      break;
-    }
-  }
-  for (let i = col; i <= rightBound; i++) {
-    if (gobanState[row][i] == checkValue) {
-      streak++;
-    } else {
-      break;
-    }
-  }
-
-  return streak > 4;
-}
-
-function checkVertical(row, col) {
-  let checkValue = gobanState[row][col];
-  let streak = -1;
-  const topBound = row - 4 >= 0 ? row - 4 : 0;
-  const bottomBound = row + 4 <= 8 ? row + 4 : 8;
-
-
-  for (let i = row; i >= topBound; i--) {
-    if (gobanState[i][col] == checkValue) {
-      streak++;
-    } else {
-      break;
-    }
-  }
-  for (let i = row; i <= bottomBound; i++) {
-    if (gobanState[i][col] == checkValue) {
-      streak++;
-    } else {
-      break;
-    }
-  }
-
-  return streak > 4;
-}
-
-function checkDiagonal(row, col) {
-  let checkValue = gobanState[row][col];
-  let streak = -1;
-
-  for (let i = 0; i < 5; i++) {
-    if (row - i < 0 || col - i < 0) {
-      break;
-    } else if (gobanState[row - i][col - i] !== checkValue) {
-      break;
-    }
-    streak++;
-  }
-
-  for (let i = 0; i < 5; i++) {
-    if (row + i > 8 || col + i > 8) {
-      break;
-    } else if (gobanState[row + i][col + i] !== checkValue) {
-      break;
-    }
-    streak++;
-  }
-
-  if (streak > 4) {
-    return true;
-  }
-
-  streak = -1;
-
-  for (let i = 0; i < 5; i++) {
-    if (row + i > 8 || col - i < 0) {
-      break;
-    } else if (gobanState[row + i][col - i] !== checkValue) {
-      break;
-    }
-    streak++;
-  }
-
-  for (let i = 0; i < 5; i++) {
-    if (row - i < 0 || col + i > 8) {
-      break;
-    } else if (gobanState[row - i][col + i] !== checkValue) {
-      break;
-    }
-    streak++;
-  }
-
-  return streak > 4;
-}
-
-function checkBoard(row, col) {
-  let message = "";
-
-  if (gobanState[row][col] == 1) {
-    message += "Black has won the game!"
-  } else {
-    message += "White has won the game!"
-  }
-
-  if (checkHorizontal(row, col) || checkVertical(row, col) || checkDiagonal(row, col)) {
-    window.confirm(message);
-  }
-}
-
-function placePiece(e) {
-  const intersection = e.target;
-  const filepath = "file:///C:/Users/qiwei/Desktop/Code/IronHack/module-1/self-directed-project/Board-Games/";
-  const isBlack = (turn % 2 == 0);
-  const position = Number(intersection.alt);
-  const row = Math.floor(position / 9);
-  const col = position % 9;
-
-  const cornerUl = `${filepath}css/corner-ul.png`
-  const cornerUr = `${filepath}css/corner-ur.png`
-  const cornerBl = `${filepath}css/corner-bl.png`
-  const cornerBr = `${filepath}css/corner-br.png`
-  const borderTop = `${filepath}css/border-top.png`
-  const borderRight = `${filepath}css/border-right.png`
-  const borderBottom = `${filepath}css/border-bottom.png`
-  const borderLeft = `${filepath}css/border-left.png`
-  const middle = `${filepath}css/middle.png`
-  const hoshi = `${filepath}css/hoshi.png`
-
-  if (isBlack) {
-    switch (intersection.src) {
-      case cornerUl:
-        intersection.setAttribute("src", "./css/corner-ul-b.png");
-        break;
-      case borderTop:
-        intersection.setAttribute("src", `./css/border-top-b.png`);
-        break;
-      case cornerUr:
-        intersection.setAttribute("src", "./css/corner-ur-b.png");
-        break;
-      case borderLeft:
-        intersection.setAttribute("src", `./css/border-left-b.png`);
-        break;
-      case middle:
-        intersection.setAttribute("src", `./css/middle-b.png`);
-        break;
-      case borderRight:
-        intersection.setAttribute("src", `./css/border-right-b.png`);
-        break;
-      case cornerBl:
-        intersection.setAttribute("src", `./css/corner-bl-b.png`);
-        break;
-      case borderBottom:
-        intersection.setAttribute("src", `./css/border-bottom-b.png`);
-        break;
-      case cornerBr:
-        intersection.setAttribute("src", `./css/corner-br-b.png`);
-        break;
-      case hoshi:
-        intersection.setAttribute("src", `./css/middle-b.png`);
-        break;
-      default:
-        return;
-    }
-  } else {
-    switch (intersection.src) {
-      case cornerUl:
-        intersection.setAttribute("src", "./css/corner-ul-w.png");
-        break;
-      case borderTop:
-        intersection.setAttribute("src", `./css/border-top-w.png`);
-        break;
-      case cornerUr:
-        intersection.setAttribute("src", "./css/corner-ur-w.png");
-        break;
-      case borderLeft:
-        intersection.setAttribute("src", `./css/border-left-w.png`);
-        break;
-      case middle:
-        intersection.setAttribute("src", `./css/middle-w.png`);
-        break;
-      case borderRight:
-        intersection.setAttribute("src", `./css/border-right-w.png`);
-        break;
-      case cornerBl:
-        intersection.setAttribute("src", `./css/corner-bl-w.png`);
-        break;
-      case borderBottom:
-        intersection.setAttribute("src", `./css/border-bottom-w.png`);
-        break;
-      case cornerBr:
-        intersection.setAttribute("src", `./css/corner-br-w.png`);
-        break;
-      case hoshi:
-        intersection.setAttribute("src", `./css/middle-w.png`);
-        break;
-      default:
-        return;
-    }
-  }
-
-  gobanState[row][col] = isBlack ? 1 : -1;
-  turn++;
-  pass = 0;
-
-  checkBoard(row, col);
-}
-
-function passTurn() {
-  turn++;
-  pass++;
+// Updates size variable and re-initalize game
+function changeSize() {
+  size = Number(document.querySelector("select[name=board-size]").value);
+  createGoban();
 }
 
 window.onload = function () {
+  game = document.querySelector("select[name=games]").value;
+  size = Number(document.querySelector("select[name=board-size]").value);
+
+  // Creates goban based on game and size value and initialize onclick event for each intersection
   createGoban();
 
+
+
+  // Initializes onclick and onchange events for HTML elements
+  document.querySelector("select[name=games]").onchange = changeGame;
+  document.querySelector("select[name=board-size]").onchange = changeSize;
   document.querySelector("#pass").onclick = passTurn;
   document.querySelector("#restart").onclick = changeGame;
-
-  document.querySelector("select[name=games]").onchange = changeGame;
 }
-

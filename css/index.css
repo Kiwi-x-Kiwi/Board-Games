@@ -8,7 +8,7 @@ body{
   margin: 0 5vh;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: space-evenly;
   background-color: #1A1A1A;
 }
 
@@ -123,8 +123,8 @@ select{
   width: 100%;
   height: 20%;
   margin-bottom: 2%;
-  color: #8EB0DE;
-  background: #DDD;
+  color: #1477FF;
+  background: #EEE;
   border: 1px solid #383838;
   border-radius: 10px;
   /* text-align: center; */
@@ -134,6 +134,7 @@ select{
 
 .player-box:nth-child(1){
   background: black;
+  border-color: #1477FF;
 }
 
 #general{
